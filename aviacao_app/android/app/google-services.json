@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "225007829513",
+    "project_id": "aviacaoparanapanema",
+    "storage_bucket": "aviacaoparanapanema.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:225007829513:android:82745feee2c1024d846ed8",
+        "android_client_info": {
+          "package_name": "com.example.aviacao_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "225007829513-7vqk3ip3d0h3a5mrlcbms8osvcg9css0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAD2qnPI0HASF2HTVHnwcNRSx9mQxm2GFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "225007829513-7vqk3ip3d0h3a5mrlcbms8osvcg9css0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

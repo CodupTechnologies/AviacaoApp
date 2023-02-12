@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>225007829513-mqpm6qe5odbamfmd2kure0flk5m13s1k.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.225007829513-mqpm6qe5odbamfmd2kure0flk5m13s1k</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBp1JKj6Zf5z-RZ5gVUWKXk4CauOt-mKiU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>225007829513</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.aviacaoApp</string>
+	<key>PROJECT_ID</key>
+	<string>aviacaoparanapanema</string>
+	<key>STORAGE_BUCKET</key>
+	<string>aviacaoparanapanema.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:225007829513:ios:c1eb971a0f7f4074846ed8</string>
+</dict>
+</plist>
