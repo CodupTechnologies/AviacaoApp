@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
@@ -14,6 +15,11 @@ class AppTextStyles {
     fontSize: 20,
     fontWeight: FontWeight.w600,
     color: AppColors.background,
+  );
+  static final perfilFontpage = GoogleFonts.lexendDeca(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: AppColors.cinzaDois,
   );
 
   static final titleBoldListTitle = GoogleFonts.lexendDeca(
@@ -107,4 +113,24 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
     color: AppColors.body,
   );
+  static final chamaUser = GoogleFonts.inter(
+      fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.verdeEscuro);
+
+  static final userText = GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w400,
+    color: AppColors.heading,
+  );
+  static final labelStoc = GoogleFonts.inter(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.vermelho2,
+  );
+  static final labelResultStock = GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    color: AppColors.grey,
+  );
+  static final innerTitle = GoogleFonts.inter(
+      color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500);
 }

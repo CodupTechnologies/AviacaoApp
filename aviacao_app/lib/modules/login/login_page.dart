@@ -7,6 +7,8 @@ import '../../services/auth_service.dart';
 import '../../shared/themes/app_colors.dart';
 import '../../shared/themes/app_images.dart';
 import '../../shared/widgets/regular_login_button.dart';
+import '../cadastroUsuario/cadastrar_usuario_page.dart';
+import '../resetarSenha/resetar_senha_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -35,6 +37,7 @@ class _LoginPageState extends State<LoginPage> {
           .read<AuthService>()
           .login(_emailController.text, _passwordController.text);
     } on AuthException catch (e) {
+      print(e);
       setState(() => loading = false);
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.message)));
@@ -65,21 +68,24 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
-                      Colors.black.withOpacity(0.85), BlendMode.darken)),
+                      Colors.black.withOpacity(0.65), BlendMode.darken)),
             ),
             child: Stack(children: [
               Form(
                   child: Column(
                 children: [
-                  Container(
-                      width: w,
-                      height: h * 0.32,
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                        image: AssetImage(AppImages.logoFull),
-                        scale: 0.8,
-                        alignment: Alignment.bottomCenter,
-                      ))),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 40, right: 40),
+                    child: Container(
+                        width: w,
+                        height: h * 0.4,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                          image: AssetImage(AppImages.logoFull),
+                          scale: 0.8,
+                          alignment: Alignment.bottomCenter,
+                        ))),
+                  ),
                   const SizedBox(
                     height: 50,
                   ),
@@ -217,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: () {
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
-                                return Text('Resetar senha page');
+                                return const resetarSenhaPage();
                               }));
                             },
                             child: Text("Lembrar Senha",
@@ -247,11 +253,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       TextButton(
                           onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        Text('Resetar senha page')));
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return const CadastrarUsuarioPage();
+                            }));
                           },
                           child: Text("Cadastre-se",
                               style: TextStyle(

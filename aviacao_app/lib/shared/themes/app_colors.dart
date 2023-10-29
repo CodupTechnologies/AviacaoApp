@@ -23,4 +23,6 @@ class AppColors {
   static final letraExame = Color(0xFF5DB075);
   static final vermelho2 = Color(0xFFAE3535);
   static final cinzaClaro = Color(0xFFBDBDBD);
+  static final verdeEscuro = Color(0xFF87BBAF);
+  static final cinzaDois = Color(0xFF332F2E);
 }

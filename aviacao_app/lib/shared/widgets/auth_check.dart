@@ -1,3 +1,4 @@
+import 'package:aviacao_app/modules/home/home_page.dart';
 import 'package:aviacao_app/modules/login/login_page.dart';
 import 'package:aviacao_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class _AuthCheckState extends State<AuthCheck> {
     else if (auth.usuario == null)
       return LoginPage();
     else
-      return LoginPage();
+      return HomePage();
   }
 
   loading() {

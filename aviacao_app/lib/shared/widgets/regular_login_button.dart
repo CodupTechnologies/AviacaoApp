@@ -21,9 +21,10 @@ class LoginButtonRegular extends StatelessWidget {
       child: Container(
         height: 45,
         decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(25),
-            border: Border.fromBorderSide(BorderSide(color: AppColors.stroke))),
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(25),
+          // border: Border.fromBorderSide(BorderSide(color: AppColors.stroke))
+        ),
         child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: (loading)
