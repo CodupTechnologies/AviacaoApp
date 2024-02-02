@@ -18,6 +18,7 @@ class _CadastrarUsuarioPageState extends State<CadastrarUsuarioPage> {
   final _emailController = TextEditingController();
   final _passwordController1 = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nomeController = TextEditingController();
   var _passwordVisible = false;
   bool loading = false;
   String textSnack = '';
@@ -30,9 +31,8 @@ class _CadastrarUsuarioPageState extends State<CadastrarUsuarioPage> {
   registrar() async {
     setState(() => loading = true);
     try {
-      await context
-          .read<AuthService>()
-          .registrar(_emailController.text, _passwordController1.text);
+      await context.read<AuthService>().registrar(_emailController.text,
+          _passwordController1.text, _nomeController.text);
     } on AuthException catch (e) {
       setState(() => loading = false);
       ScaffoldMessenger.of(context)
@@ -45,6 +45,7 @@ class _CadastrarUsuarioPageState extends State<CadastrarUsuarioPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _passwordController1.dispose();
+    _nomeController.dispose();
     super.dispose();
   }
 
@@ -79,7 +80,7 @@ class _CadastrarUsuarioPageState extends State<CadastrarUsuarioPage> {
               padding: const EdgeInsets.only(right: 40, left: 40),
               child: Container(
                   width: w,
-                  height: h * 0.40,
+                  height: h * 0.35,
                   decoration: BoxDecoration(
                       image: DecorationImage(
                     image: AssetImage(AppImages.logoFull),
@@ -92,7 +93,41 @@ class _CadastrarUsuarioPageState extends State<CadastrarUsuarioPage> {
             ),
             Padding(
               //Campo de Usuário
-              padding: const EdgeInsets.only(left: 30, right: 30, top: 30),
+              padding: const EdgeInsets.only(left: 30, right: 30, top: 20),
+              child: TextFormField(
+                keyboardType: TextInputType.emailAddress,
+                controller: _nomeController,
+                autofocus: false,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color.fromARGB(255, 84, 85, 85),
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'Nome:',
+                  contentPadding:
+                      const EdgeInsets.only(left: 14.0, bottom: 8.0, top: 8.0),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 1.0),
+                      borderRadius: BorderRadius.circular(5)),
+                ),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Informe o email corretamente!';
+                  } else
+                    return null;
+                },
+              ),
+            ),
+            Padding(
+              //Campo de Usuário
+              padding: const EdgeInsets.only(left: 30, right: 30, top: 15),
               child: TextFormField(
                 keyboardType: TextInputType.emailAddress,
                 controller: _emailController,
@@ -105,7 +140,7 @@ class _CadastrarUsuarioPageState extends State<CadastrarUsuarioPage> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Email',
+                  hintText: 'Email:',
                   contentPadding:
                       const EdgeInsets.only(left: 14.0, bottom: 8.0, top: 8.0),
                   focusedBorder: OutlineInputBorder(
@@ -139,7 +174,7 @@ class _CadastrarUsuarioPageState extends State<CadastrarUsuarioPage> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Senha',
+                  hintText: 'Senha:',
                   suffixIcon: IconButton(
                     icon: Icon(
                       _passwordVisible
@@ -188,7 +223,7 @@ class _CadastrarUsuarioPageState extends State<CadastrarUsuarioPage> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Confirme sua senha',
+                  hintText: 'Confirme sua senha:',
                   suffixIcon: IconButton(
                     icon: Icon(
                       _passwordVisible

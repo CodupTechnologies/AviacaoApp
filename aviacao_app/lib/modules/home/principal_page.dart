@@ -1,6 +1,7 @@
 import 'package:aviacao_app/shared/widgets/card_apontamento.dart';
 import 'package:aviacao_app/shared/widgets/card_relogioPonto.dart';
 import 'package:aviacao_app/shared/widgets/fab_flow_button.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,6 @@ class _PrincipalPageState extends State<PrincipalPage> {
   Widget build(BuildContext context) {
     final agoraTime = DateTime.now();
     final size = MediaQuery.of(context).size;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Principal'),
@@ -48,12 +48,7 @@ class _PrincipalPageState extends State<PrincipalPage> {
                 Padding(
                   padding:
                       const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-                  child: CardControle(
-                      tipoPonto: "Entrada",
-                      horaInicio: '09:30',
-                      horaFim: '18:30',
-                      dateRegister: agoraTime,
-                      loading: false),
+                  child: CardControle(),
                 ),
                 CardApontamento(),
               ],

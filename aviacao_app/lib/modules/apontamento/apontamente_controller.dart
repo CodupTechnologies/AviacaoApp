@@ -4,58 +4,98 @@ import 'package:flutter/material.dart';
 
 final _user = FirebaseAuth.instance.currentUser!.uid.toString();
 var message = '';
+final instance = FirebaseFirestore.instance;
+
+Future atualizarRegistro(
+    String collec, String docx, String column, String value) async {
+  await instance.collection(collec).doc(docx).update({
+    column: value,
+  });
+}
+
+Future atualizarApontamento(
+    DateTime data,
+    String codApontamento,
+    String odometroFinal,
+    String aeronaveApontamento,
+    String observacaoApontamento,
+    String codVeiculo,
+    String codigoAeronave,
+    String user,
+    context) async {
+  String tipoApontamento = '';
+
+  if (odometroFinal == '') {
+    tipoApontamento == 'Abertura';
+    instance.collection('AVP_Automoveis').doc(codVeiculo).update({
+      'condutorVeiculo': user,
+      'dataAtualizacao': data,
+    });
+  } else {
+    tipoApontamento == 'Fechamento';
+    instance.collection('AVP_Automoveis').doc(codVeiculo).update({
+      'condutorVeiculo': '',
+      'dataAtualizacao': data,
+      'odometroAtual': odometroFinal.toString()
+    });
+  }
+
+  await FirebaseFirestore.instance
+      .collection("AVP_Apontamentos")
+      .doc(codApontamento)
+      .update({
+    'odometroFinal': odometroFinal,
+    'regAeronave': aeronaveApontamento,
+    'tipoApontamento': tipoApontamento,
+    'observacaoApontamento': observacaoApontamento,
+    'codAeronave': codigoAeronave,
+  });
+}
 
 Future salvarApontamento(
     DateTime data,
     DateTime dataRegistro,
-    String hora,
     String veiculo,
     String codVeiculo,
     String codAeronave,
-    String combustivelApontamento,
     String odometroInicial,
     String odometroFinal,
-    String tanqueInicial,
-    String tanqueFinal,
     String aeronaveApontamento,
-    String tanqueAeronaveInicial,
-    String tanqueAeronaveFinal,
+    String observacaoApontamento,
+    String user,
+    String codigoAeronave,
+    String placaVeiculo,
     context) async {
+  String tipoApontamento = '';
+
+  if (odometroFinal == '') {
+    tipoApontamento == 'Abertura';
+    instance.collection('AVP_Automoveis').doc(codVeiculo).update({
+      'condutorVeiculo': user,
+      'dataAtualizacao': data,
+    });
+  } else {
+    tipoApontamento == 'Fechamento';
+    instance.collection('AVP_Automoveis').doc(codVeiculo).update({
+      'condutorVeiculo': '',
+      'dataAtualizacao': data,
+      'odometroAtual': odometroFinal.toString()
+    });
+  }
+
   await FirebaseFirestore.instance.collection("AVP_Apontamentos").add({
     'codUser': _user,
     'dataRegistro': dataRegistro,
     'dataApontamento': data,
-    'horaApontamento': hora,
     'veiculoApontamento': veiculo,
-    'combustivel': combustivelApontamento,
     'odometroInicial': odometroInicial,
     'odometroFinal': odometroFinal,
-    'registroTanqueInicial': tanqueInicial,
-    'registroTanqueFinal': tanqueFinal,
     'regAeronave': aeronaveApontamento,
-    'tanqueAeronaveInicial': tanqueAeronaveInicial,
-    'tanqueAeronaveFinal': tanqueAeronaveFinal,
+    'tipoApontamento': tipoApontamento,
+    'observacaoApontamento': observacaoApontamento,
+    'codAeronave': codigoAeronave,
   }).then((res) => message = 'Dados inseridos com sucesso',
       onError: (e) => message = 'Erro: $e');
-
-  if (tanqueFinal.isNotEmpty) {
-    await FirebaseFirestore.instance
-        .collection("AVP_Automoveis")
-        .doc(codVeiculo)
-        .update({'combustivelTransporteAtual': tanqueFinal});
-  }
-  if (odometroFinal.isNotEmpty) {
-    await FirebaseFirestore.instance
-        .collection("AVP_Automoveis")
-        .doc(codVeiculo)
-        .update({'odometroAtual': odometroFinal});
-  }
-  if (tanqueAeronaveFinal.isNotEmpty) {
-    await FirebaseFirestore.instance
-        .collection("AVP_Aeronaves")
-        .doc(codAeronave)
-        .update({'tanqueAtual': tanqueAeronaveFinal});
-  }
 
   return ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content: Text(message)));

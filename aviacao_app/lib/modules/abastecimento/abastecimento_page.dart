@@ -7,14 +7,6 @@ import 'package:flutter/material.dart';
 
 import '../../shared/themes/app_colors.dart';
 import '../../shared/themes/style_guidelines.dart';
-import '../../shared/widgets/card_apontamento.dart';
-
-const List<String> tipoAbastecimento = <String>[
-  'Selecione o tipo',
-  'Transferência',
-  'Abastecimento Aeronave',
-  'Abastecimento Veículo'
-];
 
 class AbastecimentoPage extends StatefulWidget {
   const AbastecimentoPage({super.key});
@@ -38,12 +30,24 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
   DateTime dataSelecionada = DateTime.now();
   final DateTime _date = DateTime.now();
 
-  final _user = FirebaseAuth.instance.currentUser!;
+  final _user = FirebaseAuth.instance.currentUser!.uid.toString();
   bool loading = true;
   String dropdownCombustiveis = "0";
-  String dropdownAbastecimento = tipoAbastecimento.first;
-  String estoqueOrigem = '220';
-  String estoqueDestino = '420';
+  String dropdownOrigem = "0";
+  String dropdownDestino = "0";
+
+  String estoqueOrigem = '0';
+  String estoqueDestino = '0';
+  String nomeu = 'o';
+  String codCombustivelOrigem = '';
+  String codCombustivelDestino = '';
+  String tipoOrigem = "";
+  String tipoDestino = "";
+  String codigoDocDropdownOrigem = '';
+  String codigoDocDropdownDestino = '';
+  String nomeCombustivel = '';
+  String nomeDestino = '';
+  String nomeOrigem = '';
 
   Future<Null> _selectcDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -90,26 +94,82 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
         final combustivel = dock.data() as Map<String, dynamic>;
         setState(() {
           nome = combustivel['nome'].toString();
+          nomeCombustivel = nome;
         });
       } else {
         setState(() {
           nome = "0";
+          nomeCombustivel = nome;
         });
       }
     });
   }
 
-  // Future BringDataFromFirebase() async {
-  //   var data = Map();
-  //   await FirebaseFirestore.instance.collection('users').doc(_user).get().then(
-  //       (DocumentSnapshot doc) {
-  //     data = doc.data() as Map<String, dynamic>;
-  //   }, onError: (e) => print("Erro de download de dados"));
-  //   setState(() {
-  //     CRMControler = data['UserCRM'].toString();
-  //     MedicoControler = data['UserFirstName'].toString();
-  //   });
-  // }
+  returnEstoqueCombustivel(String codDrop, String dbPlace) async {
+    String db = "";
+    if (dbPlace == "origem") {
+      db = "AVP_dropdownCombustivelOrigem";
+      codigoDocDropdownOrigem = codDrop;
+    } else if (dbPlace == "destino") {
+      db = "AVP_dropdownCombustivelDestino";
+      codigoDocDropdownDestino = codDrop;
+    }
+    await FirebaseFirestore.instance
+        .collection(db)
+        .doc(codDrop)
+        .get()
+        .then((DocumentSnapshot document) {
+      if (document.exists) {
+        final dropdownValues = document.data() as Map<String, dynamic>;
+
+        if (dbPlace == "origem") {
+          setState(() {
+            estoqueOrigem = dropdownValues['tanqueAtual'].toString();
+            tipoOrigem = dropdownValues['tipo'].toString();
+            codCombustivelOrigem = dropdownValues['codOriginal'].toString();
+            nomeOrigem = dropdownValues['nome'].toString();
+          });
+          //      print(tipoOrigem);
+        } else if (dbPlace == "destino") {
+          setState(() {
+            codCombustivelDestino = dropdownValues['codOriginal'].toString();
+            tipoDestino = dropdownValues['tipo'].toString();
+            estoqueDestino = dropdownValues['tanqueAtual'].toString();
+            nomeDestino = dropdownValues['nome'].toString();
+          });
+          //    print(tipoDestino);
+        }
+      } else {
+        setState(() {
+          estoqueOrigem = "0";
+          estoqueDestino = "0";
+          print("Documento nao encontrado");
+        });
+      }
+    });
+  }
+
+  returnNomeUser(String user) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user)
+        .get()
+        .then((DocumentSnapshot document) {
+      final nomeUser = document.data() as Map<String, dynamic>;
+      setState(() {
+        nomeu = nomeUser['nome'].toString();
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    setState(() {
+      final _user = FirebaseAuth.instance.currentUser!.uid.toString();
+    });
+    returnNomeUser(_user);
+    super.initState();
+  }
 
   void dispose() {
     quantidadeController.dispose();
@@ -128,6 +188,7 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    returnNomeUser(_user);
     return Scaffold(
       appBar: AppBar(
         actions: [],
@@ -206,13 +267,12 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Responsável: ",
+                              "Usuário: ",
                               style: AppTextStyles.chamaUser,
                             ),
-                            Text(
-                              _user.email.toString(),
-                              style: AppTextStyles.userText,
-                            )
+                            Text(nomeu, //taaqui
+                                style: AppTextStyles.userText,
+                                overflow: TextOverflow.clip)
                           ],
                         ),
                       ),
@@ -272,7 +332,7 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
                         ),
                       ),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(
@@ -280,37 +340,39 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
                             ),
                             child: StreamBuilder<QuerySnapshot>(
                               stream: FirebaseFirestore.instance
-                                  .collection("AVP_Combustiveis")
+                                  .collection("AVP_dropdownCombustivelOrigem")
+                                  .where("ativo", isEqualTo: true)
                                   .snapshots(),
                               // initialData: initialData,
                               builder: (context, snapshot) {
-                                List<DropdownMenuItem> combustivelItens = [];
+                                List<DropdownMenuItem> OrigemItens = [];
                                 if (!snapshot.hasData) {
                                   CircularProgressIndicator();
                                 } else {
-                                  final combustiveis =
+                                  final origemList =
                                       snapshot.data?.docs.toList();
-                                  combustivelItens.add(DropdownMenuItem(
-                                      value: "0", child: Text('Origem: ')));
-                                  for (var combustivel in combustiveis!) {
-                                    combustivelItens.add(DropdownMenuItem(
-                                        value: combustivel.id,
-                                        child: Text(
-                                            combustivel['nome'].toString())));
+                                  OrigemItens.add(DropdownMenuItem(
+                                      value: "0", child: Text('Origem:')));
+                                  for (var origens in origemList!) {
+                                    OrigemItens.add(DropdownMenuItem(
+                                        value: origens.id,
+                                        child:
+                                            Text(origens['nome'].toString())));
                                   }
                                 }
                                 return Container(
                                   height: 48,
-                                  width: size.width * 0.42,
+                                  width: size.width * 0.44,
                                   child: DropdownButtonFormField(
-                                      items: combustivelItens,
+                                      items: OrigemItens,
                                       onChanged: (nome) {
                                         setState(() {
-                                          dropdownCombustiveis = nome;
-                                          returnCombustiveis(nome);
+                                          returnEstoqueCombustivel(
+                                              nome, "origem");
+                                          // retorna variavel do cod origem
                                         });
                                       },
-                                      value: dropdownCombustiveis,
+                                      value: dropdownOrigem,
                                       icon: const Icon(
                                           Icons.arrow_drop_down_circle),
                                       elevation: 14,
@@ -347,41 +409,40 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
                             ),
                           ),
                           Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: 10, left: 10),
-                            child: StreamBuilder<QuerySnapshot>(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: new StreamBuilder<QuerySnapshot>(
                               stream: FirebaseFirestore.instance
-                                  .collection("AVP_Combustiveis")
+                                  .collection("AVP_dropdownCombustivelDestino")
+                                  .where("ativo", isEqualTo: true)
                                   .snapshots(),
                               // initialData: initialData,
                               builder: (context, snapshot) {
-                                List<DropdownMenuItem> combustivelItens = [];
+                                List<DropdownMenuItem> destinosItens = [];
                                 if (!snapshot.hasData) {
                                   CircularProgressIndicator();
                                 } else {
-                                  final combustiveis =
-                                      snapshot.data?.docs.toList();
-                                  combustivelItens.add(DropdownMenuItem(
+                                  final destinos = snapshot.data?.docs.toList();
+                                  destinosItens.add(DropdownMenuItem(
                                       value: "0", child: Text('Destino:')));
-                                  for (var combustivel in combustiveis!) {
-                                    combustivelItens.add(DropdownMenuItem(
-                                        value: combustivel.id,
-                                        child: Text(
-                                            combustivel['nome'].toString())));
+                                  for (var destino in destinos!) {
+                                    destinosItens.add(DropdownMenuItem(
+                                        value: destino.id,
+                                        child:
+                                            Text(destino['nome'].toString())));
                                   }
                                 }
                                 return Container(
                                   height: 48,
-                                  width: size.width * 0.42,
+                                  width: size.width * 0.43,
                                   child: DropdownButtonFormField(
-                                      items: combustivelItens,
+                                      items: destinosItens,
                                       onChanged: (nome) {
                                         setState(() {
-                                          dropdownCombustiveis = nome;
-                                          returnCombustiveis(nome);
+                                          returnEstoqueCombustivel(
+                                              nome, "destino");
                                         });
                                       },
-                                      value: dropdownCombustiveis,
+                                      value: dropdownDestino,
                                       icon: const Icon(
                                           Icons.arrow_drop_down_circle),
                                       elevation: 14,
@@ -596,13 +657,6 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
                               isDense: true,
                               hintText: "Observações:",
                               filled: true,
-                              suffixIcon: Padding(
-                                padding: EdgeInsets.only(left: 8),
-                                child: Icon(
-                                  Icons.remove_red_eye_outlined,
-                                  size: 22,
-                                ),
-                              ),
                               focusedBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(20),
@@ -636,14 +690,22 @@ class _AbastecimentoPageState extends State<AbastecimentoPage> {
                                   horaController != '') {
                                 saveAbastecimento(
                                     dataSelecionada,
-                                    horaController.text,
-                                    dropdownAbastecimento,
                                     dropdownCombustiveis,
+                                    codigoDocDropdownOrigem,
+                                    codigoDocDropdownDestino,
+                                    codCombustivelOrigem,
+                                    codCombustivelDestino,
                                     odometroIncioController.text,
                                     odometroFinalcontroller.text,
-                                    origemController.text,
-                                    destinoController.text,
                                     quantidadeController.text,
+                                    observacaoController.text,
+                                    tipoOrigem,
+                                    tipoDestino,
+                                    estoqueOrigem,
+                                    estoqueDestino,
+                                    nomeCombustivel,
+                                    nomeDestino,
+                                    nomeOrigem,
                                     context);
                                 Future.delayed(const Duration(seconds: 2), () {
                                   Navigator.pop(context);

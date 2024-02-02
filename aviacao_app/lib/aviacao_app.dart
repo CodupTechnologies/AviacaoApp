@@ -1,5 +1,6 @@
 import 'package:aviacao_app/modules/abastecimento/abastecimento_page.dart';
 import 'package:aviacao_app/modules/apontamento/apontamento_page.dart';
+import 'package:aviacao_app/modules/relogioPonto/relogioPonto_page.dart';
 import 'package:aviacao_app/shared/themes/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:aviacao_app/shared/widgets/auth_check.dart';
@@ -18,6 +19,7 @@ class AviacaoApp extends StatelessWidget {
           '/': (context) => AuthCheck(),
           '/Apontamento': ((context) => ApontamentoPage()),
           '/Abastecimento': ((context) => AbastecimentoPage()),
+          '/RegistroPonto': ((context) => RelogioPontoPage()),
         });
   }
 }

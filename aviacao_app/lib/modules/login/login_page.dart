@@ -162,8 +162,9 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(5),
                         ),
                         enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 1.0),
+                            borderSide: BorderSide(
+                                color: const Color.fromARGB(255, 2, 2, 2),
+                                width: 1.0),
                             borderRadius: BorderRadius.circular(5)),
                       ),
                       validator: (value) {

@@ -1,3 +1,5 @@
+import 'package:aviacao_app/modules/abastecimento/abatecimento_controller.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,7 +31,7 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  registrar(String email, String senha) async {
+  registrar(String email, String senha, String nomeUser) async {
     try {
       await _auth.createUserWithEmailAndPassword(email: email, password: senha);
       _getUser();
@@ -39,6 +41,19 @@ class AuthService extends ChangeNotifier {
       } else if (e.code == 'email-already-in-use') {
         throw AuthException('Este email já está em uso');
       }
+    }
+    try {
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(FirebaseAuth.instance.currentUser!.uid.toString())
+          .set({
+        'codUser': FirebaseAuth.instance.currentUser!.uid.toString(),
+        'email': email,
+        'nome': nomeUser,
+      }).then((res) => message = 'Dados inseridos com sucesso',
+              onError: (e) => message = 'Erro $e');
+    } on FirebaseAuthException catch (e) {
+      throw AuthException("Error $e");
     }
   }
 

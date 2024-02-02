@@ -1,28 +1,27 @@
 import 'package:aviacao_app/modules/apontamento/apontamente_controller.dart';
+import 'package:aviacao_app/shared/themes/app_colors.dart';
 import 'package:aviacao_app/shared/themes/style_guidelines.dart';
 import 'package:aviacao_app/shared/widgets/usefull_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../shared/themes/app_colors.dart';
-import '../../shared/widgets/card_apontamento.dart';
-
-const List<String> listaCombustiveis = <String>[
+List<String> listaCombustiveis = <String>[
   'Selecione o combustível',
   'Etanol',
   'Avgas',
   'JET A1',
 ];
 
-class ApontamentoPage extends StatefulWidget {
-  const ApontamentoPage({super.key});
-
+class AtualizarApontamentoPage extends StatefulWidget {
+  AtualizarApontamentoPage(this.documentSnapshotApontamento, {super.key});
+  DocumentSnapshot documentSnapshotApontamento;
   @override
-  State<ApontamentoPage> createState() => _ApontamentoPageState();
+  State<AtualizarApontamentoPage> createState() =>
+      _AtualizarApontamentoPageState();
 }
 
-class _ApontamentoPageState extends State<ApontamentoPage> {
+class _AtualizarApontamentoPageState extends State<AtualizarApontamentoPage> {
   final veiculoController = TextEditingController();
   final dateController = TextEditingController();
   final aeronaveController = TextEditingController();
@@ -35,15 +34,21 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
   final tanqueAeronaveInicialController = TextEditingController();
   final tanqueAeronaveFinalController = TextEditingController();
   final observacaoController = TextEditingController();
+
+  String receberData = '';
   Map<String, dynamic> veiculoMap = {};
+  bool setter = false;
+  bool editavel = false;
+  String uidDocumento = '';
 
   String codVeiculo = "";
   String codAeronave = "";
   String DropdownVeiculos = "Todos";
   String DropdownAeronaves = "Todos";
-  String placaVeiculo = "";
+  var placaVeiculo = "Todos";
   var aviaoBreve = "Todos";
   String condutor = '';
+  String placaDoVeiculo = '';
 
   DateTime dataSelecionada = DateTime.now();
   final DateTime _date = DateTime.now();
@@ -51,9 +56,26 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
   bool loading = true;
   String dropdownCombustiveis = listaCombustiveis.first;
 
-  Future<Null> _selectcDate(BuildContext context) async {
-    initState() {}
+  carregaCamposAeronave(String codigoAeronave) async {
+    await FirebaseFirestore.instance
+        .collection("AVP_Aeronaves")
+        .doc(codigoAeronave)
+        .get()
+        .then((DocumentSnapshot document) {
+      if (document.exists) {
+        final veiche = document.data() as Map<String, dynamic>;
+        setState(() {
+          aeronaveController.text = veiche['codRegistro'].toString();
+        });
+      } else {
+        setState(() {
+          aeronaveController.text = '';
+        });
+      }
+    });
+  }
 
+  Future<Null> _selectcDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _date,
@@ -125,79 +147,62 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
             "Veículo em uso:",
             'O veiculo selecionado está sendo utilizado por $condutor, portanto escolha outro veículo da lista',
             'OK');
+        // bottomMessage(context, 'O veiculo está aberto com: $condutor', 3);
       }
     });
   }
 
-  carregaCamposVeiculo(String codigoVeiculo) async {
-    await FirebaseFirestore.instance
-        .collection("AVP_Automoveis")
-        .doc(codigoVeiculo)
-        .get()
-        .then((DocumentSnapshot document) {
-      if (document.exists) {
-        final veiculoDB = document.data() as Map<String, dynamic>;
-
-        if (veiculoDB['condutorVeiculo'].toString() == '' ||
-            veiculoDB['condutorVeiculo'] == null ||
-            veiculoDB['condutorVeiculo'].toString() == _user.uid.toString()) {
-          setState(() {
-            veiculoMap = veiculoDB;
-            KMIncioController.text = veiculoDB['odometroAtual'].toString();
-            quantidadeInicialTanqueController.text =
-                veiculoDB['tanqueAtual'].toString();
-          });
-        } else {
-          atribuiDados();
-        }
-      } else {
-        setState(() {
-          KMIncioController.text = "";
-          quantidadeInicialTanqueController.text = "";
-        });
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
   }
-
-  carregaCamposAeronave(String codigoAeronave) async {
-    await FirebaseFirestore.instance
-        .collection("AVP_Aeronaves")
-        .doc(codigoAeronave)
-        .get()
-        .then((DocumentSnapshot document) {
-      if (document.exists) {
-        final veiche = document.data() as Map<String, dynamic>;
-        setState(() {
-          aeronaveController.text = veiche['codRegistro'].toString();
-        });
-      } else {
-        setState(() {
-          aeronaveController.text = '';
-        });
-      }
-    });
-  }
-
-  LoadUpdateWindow() async {}
 
   void dispose() {
     veiculoController.dispose();
     dateController.dispose();
     aeronaveController.dispose();
-    quantidadeInicialTanqueController.dispose();
-    quantidadeFinalTanqueController.dispose();
     tipocombustivelController.dispose();
     KMIncioController.dispose();
     KMFinalController.dispose();
-    tanqueAeronaveInicialController.dispose();
-    tanqueAeronaveFinalController.dispose();
     observacaoController.dispose();
     super.dispose();
+  }
+
+  LoadDataForControllers() async {
+    DateTime data1 =
+        (widget.documentSnapshotApontamento['dataApontamento'] as Timestamp)
+            .toDate();
+
+    String dataString = (data1.day.toString() +
+        '/' +
+        data1.month.toString() +
+        '/' +
+        data1.year.toString());
+
+    setState(() {
+      widget.documentSnapshotApontamento['odometroFinal'].toString() != ''
+          ? KMFinalController.text =
+              widget.documentSnapshotApontamento['odometroFinal'].toString()
+          : '';
+      widget.documentSnapshotApontamento['odometroFinal'].toString() != ''
+          ? editavel = false
+          : editavel = true;
+      KMIncioController.text =
+          widget.documentSnapshotApontamento['odometroInicial'].toString();
+      dateController.text = dataString;
+      DropdownAeronaves =
+          widget.documentSnapshotApontamento['regAeronave'].toString();
+      DropdownVeiculos =
+          widget.documentSnapshotApontamento['veiculoApontamento'].toString();
+      setter = true;
+      uidDocumento = widget.documentSnapshotApontamento.id.toString();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    if (setter == false) LoadDataForControllers();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Apontamento KM'),
@@ -213,7 +218,7 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 10, bottom: 10),
                   child: Text(
-                    '*Preencha os dados para cadastrar o novo apontamento',
+                    '*Apenas os campos que não possuem borda vermelha permitem edição',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 16,
@@ -229,6 +234,7 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                       Row(children: [
                         Expanded(
                           child: TextFormField(
+                            enabled: false,
                             controller: dateController,
                             style: const TextStyle(
                               fontSize: 16,
@@ -251,6 +257,10 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                               enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
                                       color: AppColors.stroke, width: 1.0),
+                                  borderRadius: BorderRadius.circular(40)),
+                              disabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: AppColors.vermelho2, width: 1.0),
                                   borderRadius: BorderRadius.circular(40)),
                             ),
                             onTap: () {
@@ -298,39 +308,38 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                                     child: Text(veiculo['placa'])));
                               }
                             }
-                            return DropdownButtonFormField(
-                              items: veiculosItens,
-                              onChanged: (VeiculoPlaca) {
-                                setState(() {
-                                  DropdownVeiculos = VeiculoPlaca;
-                                  returnPlaca(VeiculoPlaca);
-                                  carregaCamposVeiculo(VeiculoPlaca.toString());
-                                  codVeiculo = VeiculoPlaca.toString();
-                                });
-                              },
-                              value: DropdownVeiculos,
-                              icon: const Icon(Icons.arrow_drop_down_circle),
-                              elevation: 16,
-                              style: TextStyle(
-                                  color: AppColors.grey,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400),
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: AppColors.fundoCard,
-                                contentPadding:
-                                    const EdgeInsets.only(left: 20, right: 10),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                disabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
-                                  borderRadius: BorderRadius.circular(30),
+                            return IgnorePointer(
+                              ignoring: true,
+                              child: DropdownButtonFormField(
+                                items: veiculosItens,
+                                onChanged: (VeiculoPlaca) {
+                                  setState(() {
+                                    DropdownVeiculos = VeiculoPlaca;
+                                    returnPlaca(VeiculoPlaca);
+                                    codVeiculo = VeiculoPlaca.toString();
+                                  });
+                                },
+                                value: DropdownVeiculos,
+                                icon: const Icon(Icons.arrow_drop_down_circle),
+                                elevation: 16,
+                                style: TextStyle(
+                                    color: AppColors.grey,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400),
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: AppColors.fundoCard,
+                                  contentPadding: const EdgeInsets.only(
+                                      left: 20, right: 10),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: AppColors.vermelho2,
+                                          width: 1.0),
+                                      borderRadius: BorderRadius.circular(40)),
                                 ),
                               ),
                             );
@@ -342,7 +351,7 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                           Expanded(
                             child: TextFormField(
                               controller: KMIncioController,
-//                              enabled: false,
+                              enabled: false,
                               style: const TextStyle(
                                 fontSize: 16,
                                 color: Color.fromARGB(255, 84, 85, 85),
@@ -371,15 +380,16 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 disabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
+                                    borderSide: BorderSide(
+                                        color: AppColors.vermelho2, width: 1.0),
+                                    borderRadius: BorderRadius.circular(40)),
                               ),
                             ),
                           ),
                           SizedBox(width: 10),
                           Expanded(
                             child: TextFormField(
+                              enabled: editavel,
                               controller: KMFinalController,
                               style: const TextStyle(
                                 fontSize: 16,
@@ -409,9 +419,9 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 disabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
+                                    borderSide: BorderSide(
+                                        color: AppColors.vermelho2, width: 1.0),
+                                    borderRadius: BorderRadius.circular(40)),
                               ),
                             ),
                           ),
@@ -456,10 +466,8 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                               onChanged: (AviaoBreve) {
                                 setState(() {
                                   DropdownAeronaves = AviaoBreve;
-
-                                  carregaCamposAeronave(AviaoBreve.toString());
                                   codAeronave = AviaoBreve.toString();
-                                  returnPlaca(codAeronave);
+                                  carregaCamposAeronave(AviaoBreve.toString());
                                 });
                               },
                               value: DropdownAeronaves,
@@ -541,19 +549,15 @@ class _ApontamentoPageState extends State<ApontamentoPage> {
                           Expanded(
                               child: ElevatedButton(
                             onPressed: () {
-                              salvarApontamento(
-                                  dataSelecionada,
+                              atualizarApontamento(
                                   _date,
-                                  DropdownVeiculos,
-                                  codVeiculo,
-                                  codAeronave,
-                                  KMIncioController.text,
-                                  KMFinalController.text,
+                                  uidDocumento,
+                                  KMFinalController.text.toString(),
                                   DropdownAeronaves,
                                   observacaoController.text,
-                                  _user.uid.toString(),
+                                  DropdownVeiculos,
                                   aeronaveController.text,
-                                  placaVeiculo,
+                                  _user.uid.toString(),
                                   context);
                             },
                             child: Text('Salvar'),

@@ -19,3 +19,10 @@ final ButtonStyle exluirButton = ElevatedButton.styleFrom(
     elevation: 0,
     shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(20))));
+
+final ButtonStyle RegistroPonto = ElevatedButton.styleFrom(
+    backgroundColor: AppColors.amarelo2,
+    elevation: 0,
+    padding: EdgeInsets.only(left: 40, right: 40),
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20))));

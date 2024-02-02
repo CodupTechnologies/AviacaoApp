@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../themes/app_colors.dart';
 
@@ -9,13 +12,66 @@ class CardApontamento extends StatefulWidget {
   State<CardApontamento> createState() => _CardApontamentoState();
 }
 
+final instance = FirebaseFirestore.instance;
+
 class cardConf {
-  final double altura = 240;
+  final double altura = 170;
 }
 
 class _CardApontamentoState extends State<CardApontamento> {
+  final user = FirebaseAuth.instance.currentUser!.uid.toString();
+  String veiculoApontamento = '';
+  String dataApontamento = '';
+  String kmInicialApontamento = '';
+  bool possuiObservacaoApontamento = false;
+  Map<String, dynamic> mapa = Map();
+  String dia = '', mes = '', ano = '', hora = '', minuto = '', segundo = '';
+
+  carregaDadosCard() async {
+    await FirebaseFirestore.instance
+        .collection('AVP_Automoveis')
+        .where('condutorVeiculo', isEqualTo: user)
+        .get()
+        .then((QuerySnapshot snapshot) {
+      for (var docSnapshot in snapshot.docs) {
+        Timestamp timestam = docSnapshot['dataAtualizacao'] as Timestamp;
+        DateTime data = converterTempo(timestam);
+        setState(() {
+          veiculoApontamento = docSnapshot['placa'].toString();
+          kmInicialApontamento = docSnapshot['odometroAtual'].toString();
+          dataApontamento =
+              ('${data.day}/${data.month}/${data.year}  ${data.hour}:${data.minute}');
+        });
+      }
+    });
+    if (dataApontamento == '' ||
+        kmInicialApontamento == '' ||
+        veiculoApontamento == '') {
+      setState(() {
+        veiculoApontamento = 'Sem veículo';
+      });
+    }
+    // Navigator.of(context).pop;
+  }
+
+  converterTempo(Timestamp time) {
+    DateTime ti = time.toDate();
+    return ti;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    carregaDadosCard();
     cardConf configuracacao = new cardConf();
     bool loading = false;
     double bordacampos = 20;
@@ -34,7 +90,7 @@ class _CardApontamentoState extends State<CardApontamento> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Apontamento Diário",
+                "Apontamento Atual",
                 style: TextStyle(
                     color: Colors.black,
                     fontSize: 20,
@@ -50,7 +106,7 @@ class _CardApontamentoState extends State<CardApontamento> {
                         fontWeight: FontWeight.w400),
                   ),
                   Text(
-                    ' HML-1093', // variable
+                    veiculoApontamento, // variable
                     style: TextStyle(
                         color: AppColors.secondary,
                         fontSize: 20,
@@ -61,7 +117,7 @@ class _CardApontamentoState extends State<CardApontamento> {
               Row(
                 children: [
                   Text(
-                    'Combustivel: ',
+                    'KM Inicial: ',
                     style: TextStyle(
                         color: AppColors.primary,
                         fontSize: 16,
@@ -70,25 +126,7 @@ class _CardApontamentoState extends State<CardApontamento> {
                   Flexible(
                     child: Text(
                       overflow: TextOverflow.ellipsis,
-                      'Querosene', // variable.
-                      style: TextStyle(
-                          color: AppColors.cinzaClaro,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                  SizedBox(width: 15),
-                  Text(
-                    'QTD: ',
-                    style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  Flexible(
-                    child: Text(
-                      overflow: TextOverflow.ellipsis,
-                      '1200L', // variable
+                      kmInicialApontamento, // variable.
                       style: TextStyle(
                           color: AppColors.cinzaClaro,
                           fontSize: 18,
@@ -100,7 +138,7 @@ class _CardApontamentoState extends State<CardApontamento> {
               Row(
                 children: [
                   Text(
-                    'Data registro: ',
+                    'Data: ',
                     style: TextStyle(
                         color: AppColors.primary,
                         fontSize: 16,
@@ -108,7 +146,7 @@ class _CardApontamentoState extends State<CardApontamento> {
                   ),
                   Flexible(
                     child: Text(
-                      '10/02/2023', // Variable
+                      dataApontamento, // Variable
                       style: TextStyle(
                           color: AppColors.cinzaClaro,
                           fontSize: 18,

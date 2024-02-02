@@ -1,6 +1,6 @@
 import 'package:aviacao_app/shared/widgets/cardRelogioPontoController.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,43 +8,75 @@ import '../themes/app_colors.dart';
 import '../themes/style_guidelines.dart';
 
 class CardControle extends StatefulWidget {
-  final String tipoPonto;
-  final String horaInicio;
-  final String horaFim;
-  final DateTime dateRegister;
+  final bool loading = false;
 
-  final bool loading;
-
-  const CardControle(
-      {Key? key,
-      required this.tipoPonto,
-      required this.horaInicio,
-      required this.horaFim,
-      required this.dateRegister,
-      required this.loading})
-      : super(key: key);
+  const CardControle({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<CardControle> createState() => _CardControleState();
 }
 
 class _CardControleState extends State<CardControle> {
-  final String veiculoUser = 'DKE- 8269F';
+  final user = FirebaseAuth.instance.currentUser!;
+  String especiePontos = '';
+
+  void loadData() async {
+    int counterPonts = 0;
+    var dados = Map();
+    DateTime dataPonto;
+    final agoraa = DateTime.now();
+
+    await FirebaseFirestore.instance
+        .collection('AVP_ControlePonto')
+        .where('codUser', isEqualTo: user.uid.toString())
+        .get()
+        .then((QuerySnapshot) {
+      for (var docSnapshot in QuerySnapshot.docs) {
+        dados = docSnapshot.data() as Map<String, dynamic>;
+        dataPonto = (dados['dataHoraPonto'] as Timestamp).toDate();
+        if (dataPonto.day == agoraa.day &&
+            dataPonto.month == agoraa.month &&
+            dataPonto.year == agoraa.year) {
+          counterPonts++;
+        }
+      }
+      if (counterPonts == 0) {
+        setState(() {
+          especiePontos = 'Fechado';
+        });
+      } else if (counterPonts.isEven) {
+        setState(() {
+          especiePontos = 'Fechado';
+        });
+      } else if (counterPonts.isOdd) {
+        setState(() {
+          especiePontos = 'Aberto';
+        });
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    loadData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
-
     final sizeT = MediaQuery.of(context).size;
     bool loading = false;
     double bordacampos = 20;
     final agora = DateTime.now();
-
+    loadData();
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Container(
         width: sizeT.width * 0.90,
-        height: 210,
+        height: 140,
         decoration: BoxDecoration(
           color: AppColors.fundoCard,
           borderRadius: BorderRadius.circular(bordacampos),
@@ -91,99 +123,23 @@ class _CardControleState extends State<CardControle> {
                   Row(
                     children: [
                       Text(
-                        overflow: TextOverflow.ellipsis,
-                        'Tipo Ponto: ',
+                        'Status: ',
                         style: TextStyle(
-                            color: AppColors.vermelho2,
-                            fontSize: 12,
+                            color: AppColors.secondary,
+                            fontSize: 16,
                             fontWeight: FontWeight.w500),
                       ),
                       Flexible(
-                          child: Text(
-                        widget.tipoPonto,
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        softWrap: false,
-                      )),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        'Veículo: ',
-                        style: TextStyle(
-                            color: AppColors.grey,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      Flexible(
-                          child: Text(
-                        veiculoUser,
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        softWrap: false,
-                      )),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Intervalo das: ',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w500),
-                      ),
-                      Text(widget.horaInicio,
+                        child: Text(
+                          especiePontos,
                           style: TextStyle(
-                              color: AppColors.letraExame,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis),
-                      Text(
-                        ' Até: ',
-                        style: TextStyle(
-                            overflow: TextOverflow.ellipsis,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500),
+                              color: especiePontos == 'Aberto'
+                                  ? AppColors.vermelho2
+                                  : AppColors.letraExame,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700),
+                        ),
                       ),
-                      Text(widget.horaFim,
-                          style: TextStyle(
-                              color: AppColors.letraExame,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Entrada: ',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(widget.horaInicio,
-                          style: TextStyle(
-                              color: AppColors.letraExame,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis),
-                      Text(
-                        ' Saída: ',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(widget.horaFim,
-                          style: TextStyle(
-                              color: AppColors.letraExame,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ],
@@ -233,135 +189,155 @@ class _CardControleState extends State<CardControle> {
                       child: ElevatedButton.icon(
                         icon: Icon(
                           Icons.add,
-                          size: 18,
+                          size: 20,
                         ),
                         style: timerButtonStyle,
-                        label: Text('Adicionar'),
+                        label: Text('Registrar'),
                         onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(25.0))),
-                                    title: Text('Registrar ponto'),
-                                    content: SizedBox(
-                                      height: 190,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'Ao pressionar o botão de registrar, sua localização de GPS será adicionada ao registro.',
-                                            style: TextStyle(
-                                                color: AppColors.vermelho2),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Column(
-                                                children: [
-                                                  Icon(Icons.location_on)
-                                                ],
-                                              ),
-                                              SizedBox(width: 15),
-                                              ChangeNotifierProvider<
-                                                  RelogioPontoController>(
-                                                create: (context) =>
-                                                    RelogioPontoController(),
-                                                child: Builder(
-                                                  builder: (context) {
-                                                    final local = context.watch<
-                                                        RelogioPontoController>();
-                                                    return Column(children: [
-                                                      Text(
-                                                          'Latitude: ${local.latitude}'),
-                                                      Text(
-                                                          'Longitude: ${local.longitude}'),
-                                                    ]);
-                                                  },
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 15, bottom: 10),
-                                            child:
-                                                Text('Horário do registro: '),
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                DateTime.now().hour.toString() +
-                                                    ' : ' +
-                                                    DateTime.now()
-                                                        .minute
-                                                        .toString() +
-                                                    ' : ' +
-                                                    DateTime.now()
-                                                        .second
-                                                        .toString(),
-                                                style: TextStyle(
-                                                    color: AppColors.primary,
-                                                    fontSize: 28,
-                                                    fontWeight:
-                                                        FontWeight.w700),
-                                              )
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 15, right: 15),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Text(
-                                                  'Cancelar',
-                                                  style: TextStyle(
-                                                      color:
-                                                          AppColors.vermelho2,
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.w500),
-                                                )),
-                                            TextButton(
-                                                onPressed: () async {
-                                                  setTurno(
-                                                      user.uid.toString(),
-                                                      agora,
-                                                      14515,
-                                                      123151,
-                                                      'Entrada');
+                          Navigator.of(context).pushNamed('/RegistroPonto');
+                          // showDialog(
+                          //     context: context,
+                          //     builder: (context) => AlertDialog(
+                          //           shape: RoundedRectangleBorder(
+                          //               borderRadius: BorderRadius.all(
+                          //                   Radius.circular(25.0))),
+                          //           title: Text('Registrar ponto'),
+                          //           content: SizedBox(
+                          //             height: 250,
+                          //             child: Column(
+                          //               crossAxisAlignment:
+                          //                   CrossAxisAlignment.center,
+                          //               children: [
+                          //                 Text(
+                          //                   'Ao pressionar o botão de registrar, sua localização de GPS será adicionada ao registro.',
+                          //                   style: TextStyle(
+                          //                       color: AppColors.vermelho2),
+                          //                 ),
+                          //                 SizedBox(height: 10),
+                          //                 Row(
+                          //                   mainAxisAlignment:
+                          //                       MainAxisAlignment.center,
+                          //                   children: [
+                          //                     Column(
+                          //                       children: [
+                          //                         Icon(Icons.location_on)
+                          //                       ],
+                          //                     ),
+                          //                     SizedBox(width: 15),
+                          //                     ChangeNotifierProvider<
+                          //                         RelogioPontoController>(
+                          //                       create: (context) =>
+                          //                           RelogioPontoController(),
+                          //                       child: Builder(
+                          //                         builder: (context) {
+                          //                           final local = context.watch<
+                          //                               RelogioPontoController>();
+                          //                           return Column(children: [
+                          //                             Text(
+                          //                                 'Latitude: ${local.latitude}'),
+                          //                             Text(
+                          //                                 'Longitude: ${local.longitude}'),
+                          //                           ]);
+                          //                         },
+                          //                       ),
+                          //                     ),
+                          //                   ],
+                          //                 ),
+                          //                 Padding(
+                          //                   padding: const EdgeInsets.only(
+                          //                       top: 15, bottom: 10),
+                          //                   child:
+                          //                       Text('Horário do registro: '),
+                          //                 ),
+                          //                 Row(
+                          //                   mainAxisAlignment:
+                          //                       MainAxisAlignment.center,
+                          //                   children: [
+                          //                     Text(
+                          //                       DateTime.now().hour.toString() +
+                          //                           ' : ' +
+                          //                           DateTime.now()
+                          //                               .minute
+                          //                               .toString() +
+                          //                           ' : ' +
+                          //                           DateTime.now()
+                          //                               .second
+                          //                               .toString(),
+                          //                       style: TextStyle(
+                          //                           color: AppColors.primary,
+                          //                           fontSize: 28,
+                          //                           fontWeight:
+                          //                               FontWeight.w700),
+                          //                     )
+                          //                   ],
+                          //                 ),
+                          //                 Padding(
+                          //                   padding:
+                          //                       const EdgeInsets.only(top: 10),
+                          //                   child: Row(
+                          //                     mainAxisAlignment:
+                          //                         MainAxisAlignment.center,
+                          //                     children: [
+                          //                       Text(
+                          //                           'Saída/Entrada do almoço: '),
+                          //                       Checkbox(
+                          //                           value: isChecked,
+                          //                           onChanged: (bool? value) {
+                          //                             setState(() {
+                          //                               isChecked = value!;
+                          //                             });
+                          //                           })
+                          //                     ],
+                          //                   ),
+                          //                 ),
+                          //               ],
+                          //             ),
+                          //           ),
+                          //           actions: [
+                          //             Padding(
+                          //               padding: const EdgeInsets.only(
+                          //                   left: 15, right: 15),
+                          //               child: Row(
+                          //                 mainAxisAlignment:
+                          //                     MainAxisAlignment.spaceBetween,
+                          //                 children: [
+                          //                   TextButton(
+                          //                       onPressed: () {
+                          //                         Navigator.pop(context);
+                          //                       },
+                          //                       child: Text(
+                          //                         'Cancelar',
+                          //                         style: TextStyle(
+                          //                             color:
+                          //                                 AppColors.vermelho2,
+                          //                             fontSize: 18,
+                          //                             fontWeight:
+                          //                                 FontWeight.w500),
+                          //                       )),
+                          //                   TextButton(
+                          //                       onPressed: () async {
+                          //                         setTurno(
+                          //                             user.uid.toString(),
+                          //                             agora,
+                          //                             14515,
+                          //                             123151,
+                          //                             'Entrada');
 
-                                                  print('aqui');
-                                                },
-                                                child: Text(
-                                                  "Registrar ponto",
-                                                  style: TextStyle(
-                                                      color: AppColors.primary,
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.w500),
-                                                )),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ));
+                          //                         print('aqui');
+                          //                       },
+                          //                       child: Text(
+                          //                         "Registrar ponto",
+                          //                         style: TextStyle(
+                          //                             color: AppColors.primary,
+                          //                             fontSize: 18,
+                          //                             fontWeight:
+                          //                                 FontWeight.w500),
+                          //                       )),
+                          //                 ],
+                          //               ),
+                          //             ),
+                          //           ],
+                          //         ));
                         },
                       )),
                 ),

@@ -45,20 +45,20 @@ class RelogioPontoController extends ChangeNotifier {
   }
 }
 
-Future setTurno(String codUser, DateTime dataHora, double posLatitude,
-    double posLongitude, String tipoLancamento) async {
-  final String codCollectionTurno =
-      'avpTurnoCol_${dataHora.day}-${dataHora.month}-${dataHora.year}';
-  await FirebaseFirestore.instance
-      .collection('AVP_ControlePonto')
-      .doc(codUser.toString())
-      .collection(codCollectionTurno)
-      .add({
-    'codUser': codUser,
-    'dataHoraPonto': dataHora,
-    'turnoLatitude': posLatitude,
-    'turnoLongitude': posLongitude,
-    'tipoPonto': tipoLancamento
-  }).then((res) => print("Ponto registrado com sucesso"),
-          onError: (e) => print("Erro no Lançamento"));
-}
+// Future setTurno(String codUser, DateTime dataHora, double posLatitude,
+//     double posLongitude, bool tipoLancamento) async {
+//   final String codCollectionTurno =
+//       'avpTurnoCol_${dataHora.day}-${dataHora.month}-${dataHora.year}';
+//   await FirebaseFirestore.instance
+//       .collection('AVP_ControlePonto')
+//       .doc(codUser.toString())
+//       .collection(codCollectionTurno)
+//       .add({
+//     'codUser': codUser,
+//     'dataHoraPonto': dataHora,
+//     'turnoLatitude': posLatitude,
+//     'turnoLongitude': posLongitude,
+//     'intervaloAlmoco': tipoLancamento
+//   }).then((res) => print("Ponto registrado com sucesso"),
+//           onError: (e) => print("Erro no Lançamento"));
+// }

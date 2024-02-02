@@ -15,6 +15,7 @@ void main() async {
   );
   runApp(ChangeNotifierProvider(
           create: (context) => AuthService(), child: AviacaoApp())
+
       /*
       MaterialApp(
     home: HomePage(), 
@@ -23,6 +24,3 @@ void main() async {
 
       );
 }
-
-
-

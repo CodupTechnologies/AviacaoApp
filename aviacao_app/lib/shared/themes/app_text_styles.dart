@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -133,4 +132,47 @@ class AppTextStyles {
   );
   static final innerTitle = GoogleFonts.inter(
       color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500);
+
+  static final labelcardTitle = GoogleFonts.inter(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    color: AppColors.cinzaDois,
+  );
+
+  static final labelcardData = GoogleFonts.inter(
+    fontSize: 17,
+    fontWeight: FontWeight.w500,
+    color: AppColors.secondary,
+  );
+
+  static final labelcardTipeRed = GoogleFonts.inter(
+    fontSize: 17,
+    fontWeight: FontWeight.w500,
+    color: AppColors.vermelho2,
+  );
+  static final labelcardTipeGreen = GoogleFonts.inter(
+    fontSize: 17,
+    fontWeight: FontWeight.w500,
+    color: AppColors.letraExame,
+  );
+  static final textButtonI = GoogleFonts.inter(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    color: AppColors.primary,
+  );
+  static final cardTitleStyle = GoogleFonts.lexendDeca(
+    fontSize: 18,
+    fontWeight: FontWeight.w400,
+    color: AppColors.secondary,
+  );
+  static final cardLegendStyle = GoogleFonts.lexendDeca(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: AppColors.heading,
+  );
+  static final cardDataStyle = GoogleFonts.lexendDeca(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.heading,
+  );
 }
